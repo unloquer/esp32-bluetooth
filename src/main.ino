@@ -3,134 +3,34 @@
 #include <WebServer.h>
 #include <WiFiClient.h>
 
-#define ENABLE_OLED //if want use oled ,turn on thi macro
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+#include "bluetooth.h"
 
-#ifdef ENABLE_OLED
-#include "SSD1306.h"
-#define OLED_ADDRESS 0x3c
-#define I2C_SDA 14
-#define I2C_SCL 13
-SSD1306Wire display(OLED_ADDRESS, I2C_SDA, I2C_SCL, GEOMETRY_128_32);
-#endif
+// See the following for generating UUIDs:
+// https://www.uuidgenerator.net/
 
-OV2640 cam;
-WebServer server(80);
+//#define SERVICE_UUID     "29d39406-e846-4e53-b98b-c6065a41b21b"
+//#define CHARACTERISTIC_UUID "1b23ab7e-a2e6-4a90-be88-c65b28e92de4"
 
-const char *ssid =     "C3P";         // Put your SSID here
-const char *password = "trespatios";     // Put your PASSWORD here
 
-void handle_jpg_stream(void)
-{
-  WiFiClient client = server.client();
-  String response = "HTTP/1.1 200 OK\r\n";
-  response += "Content-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n";
-  server.sendContent(response);
-
-  while (1)
-  {
-    cam.run();
-    if (!client.connected())
-      break;
-    response = "--frame\r\n";
-    response += "Content-Type: image/jpeg\r\n\r\n";
-    server.sendContent(response);
-
-    client.write((char *)cam.getfb(), cam.getSize());
-    server.sendContent("\r\n");
-    if (!client.connected())
-      break;
-  }
-}
-
-void handle_jpg(void)
-{
-  WiFiClient client = server.client();
-
-  cam.run();
-  if (!client.connected())
-  {
-    Serial.println("fail ... \n");
-    return;
-  }
-  String response = "HTTP/1.1 200 OK\r\n";
-  response += "Content-disposition: inline; filename=capture.jpg\r\n";
-  response += "Content-type: image/jpeg\r\n\r\n";
-  server.sendContent(response);
-  client.write((char *)cam.getfb(), cam.getSize());
-}
-
-void handleNotFound()
-{
-  String message = "Server is running!\n\n";
-  message += "URI: ";
-  message += server.uri();
-  message += "\nMethod: ";
-  message += (server.method() == HTTP_GET) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += server.args();
-  message += "\n";
-  server.send(200, "text/plain", message);
-}
-
+BleApi * bApi;
 void setup()
 {
   Serial.begin(115200);
-  while (!Serial)
-  {
-    ;
-  }
+  while (!Serial) { ; }
 
-  camera_config_t camera_config;
-  camera_config.ledc_channel = LEDC_CHANNEL_0;
-  camera_config.ledc_timer = LEDC_TIMER_0;
-  camera_config.pin_d0 = 17;
-  camera_config.pin_d1 = 35;
-  camera_config.pin_d2 = 34;
-  camera_config.pin_d3 = 5;
-  camera_config.pin_d4 = 39;
-  camera_config.pin_d5 = 18;
-  camera_config.pin_d6 = 36;
-  camera_config.pin_d7 = 19;
-  camera_config.pin_xclk = 27;
-  camera_config.pin_pclk = 21;
-  camera_config.pin_vsync = 22;
-  camera_config.pin_href = 26;
-  camera_config.pin_sscb_sda = 25;
-  camera_config.pin_sscb_scl = 23;
-  camera_config.pin_reset = 15;
-  camera_config.xclk_freq_hz = 20000000;
-  camera_config.pixel_format = CAMERA_PF_JPEG;
-  camera_config.frame_size = CAMERA_FS_SVGA;
+  Serial.println("Starting BLE work!");
+  bApi = new BleApi();
+  pinMode(2, OUTPUT);
 
-  cam.init(camera_config);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(F("."));
-  }
-  Serial.println(F("WiFi connected"));
-  Serial.println("");
-  Serial.println(WiFi.localIP());
-
-#ifdef ENABLE_OLED
-  display.init();
-  display.flipScreenVertically();
-  display.setFont(ArialMT_Plain_16);
-  display.setTextAlignment(TEXT_ALIGN_CENTER);
-  display.drawString(128 / 2, 32 / 2, WiFi.localIP().toString());
-  display.display();
-#endif
-
-  server.on("/", HTTP_GET, handle_jpg_stream);
-  server.on("/jpg", HTTP_GET, handle_jpg);
-  server.onNotFound(handleNotFound);
-  server.begin();
 }
 
 void loop()
 {
-  server.handleClient();
+  digitalWrite(2, HIGH);
+  delay(100);
+  digitalWrite(2, LOW);
+  delay(100);
 }

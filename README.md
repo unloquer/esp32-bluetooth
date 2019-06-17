@@ -1,1 +1,1 @@
-testing the ttgo t-journal camera module for the esp32
+BLE services playground with the esp32
