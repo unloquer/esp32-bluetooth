@@ -22,12 +22,13 @@ BleApi::BleApi ()
   int char_value = 0;
   // set callback functions
   ledBuiltInChar->setCallbacks(new CharacteristicCallbacks());
+  notifyChar->setValue(char_value);
+  ledBuiltInChar->setValue("ledOff");
+  
   // set descriptor
   ledBuiltInChar->addDescriptor(new BLE2902());
   notifyChar->addDescriptor(new BLE2902());
 
-  notifyChar->setValue(char_value);
-  ledBuiltInChar->setValue("ledOff");
 
   bService->start();
 
