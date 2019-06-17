@@ -9,13 +9,26 @@ BleApi::BleApi ()
   bServer->setCallbacks(new ServerCallbacks());
 
   bService = bServer->createService(SERVICE_UUID);
+  notifyChar = bService->createCharacteristic(
+      NOTIFY_CHARACHTERISTIC_UUID,
+      BLECharacteristic::PROPERTY_READ |
+      BLECharacteristic::PROPERTY_NOTIFY 
+      );
   ledBuiltInChar = bService->createCharacteristic(
       CHARACTERISTIC_UUID,
       BLECharacteristic::PROPERTY_READ |
-      BLECharacteristic::PROPERTY_WRITE
+      BLECharacteristic::PROPERTY_WRITE 
       );
-  ledBuiltInChar->setValue("ledOff");
+  int char_value = 0;
+  // set callback functions
   ledBuiltInChar->setCallbacks(new CharacteristicCallbacks());
+  // set descriptor
+  ledBuiltInChar->addDescriptor(new BLE2902());
+  notifyChar->addDescriptor(new BLE2902());
+
+  notifyChar->setValue(char_value);
+  ledBuiltInChar->setValue("ledOff");
+
   bService->start();
 
   pAdvertising = BLEDevice::getAdvertising();
@@ -40,8 +53,21 @@ BleApi::~BleApi()
   delete []bService;
   delete []ledBuiltInChar;
   delete []pAdvertising;
+  delete []notifyChar;
 }
 
+void BleApi::notifyValue(int value) 
+{
+  notifyChar->setValue(value);
+  notifyChar->notify();
+  Serial.print("set and notifying: ");
+  Serial.println(value);
+}
+
+/*
+ * SERVER AND CHARACTERISTICS CALLBACKS
+ * 
+ */
 void CharacteristicCallbacks::onRead(BLECharacteristic * pChar)
 {
     Serial.println("Reading..... ");

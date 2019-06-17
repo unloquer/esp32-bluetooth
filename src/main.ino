@@ -16,6 +16,7 @@
 
 
 BleApi * bApi;
+int dummy_sensor_value = 0;
 void setup()
 {
   Serial.begin(115200);
@@ -29,8 +30,15 @@ void setup()
 
 void loop()
 {
+  Serial.println("in LOOP");
+  delay(5000);
+  dummy_sensor_value++;
+  bApi->notifyValue(dummy_sensor_value);
+  delay(5);
+/*
   digitalWrite(2, HIGH);
   delay(100);
   digitalWrite(2, LOW);
   delay(100);
+  */
 }
