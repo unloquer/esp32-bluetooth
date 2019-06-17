@@ -36,6 +36,7 @@ class BleApi {
     BleApi();
     ~BleApi();
     void notifyValue(int);
+    std::string getCharValue();
 
 
 };

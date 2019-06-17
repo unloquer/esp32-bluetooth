@@ -22,7 +22,6 @@ void setup()
   Serial.begin(115200);
   while (!Serial) { ; }
 
-  Serial.println("Starting BLE work!");
   bApi = new BleApi();
   pinMode(2, OUTPUT);
 
@@ -30,7 +29,27 @@ void setup()
 
 void loop()
 {
-  Serial.println("in LOOP");
+  std::string value = bApi->getCharValue();
+
+  if (value == "ledOn") {
+    Serial.println("TURN IT ON!");
+    digitalWrite(2, HIGH);
+  } else if(value == "ledOff")
+  {
+    Serial.println("TURN IT OFF!");
+    digitalWrite(2, LOW);
+  } 
+  /*
+  if (value.length() > 0) {
+    Serial.println("*********");
+    Serial.print("Light Bulb Value: ");
+    for (int i = 0; i < value.length(); i++)
+      Serial.print(value[i]);
+
+    Serial.println();
+    Serial.println("*********");
+  }
+  */
   delay(5000);
   dummy_sensor_value++;
   bApi->notifyValue(dummy_sensor_value);

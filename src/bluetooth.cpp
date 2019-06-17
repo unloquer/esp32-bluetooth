@@ -45,7 +45,7 @@ BleApi::BleApi ()
   pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
   pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
-  Serial.println("Characteristic defined! Now you can read it in your phone!");
+  Serial.println("BLE API DONE!");
 }
 
 BleApi::~BleApi()
@@ -61,8 +61,13 @@ void BleApi::notifyValue(int value)
 {
   notifyChar->setValue(value);
   notifyChar->notify();
-  Serial.print("set and notifying: ");
-  Serial.println(value);
+/*  Serial.print("set and notifying: ");
+  Serial.println(value);*/
+}
+
+std::string BleApi::getCharValue()
+{
+  return ledBuiltInChar->getValue();
 }
 
 /*
