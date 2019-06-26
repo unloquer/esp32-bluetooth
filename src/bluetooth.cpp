@@ -1,4 +1,5 @@
 #include "bluetooth.h"
+#include<stdlib.h>
 
 BleApi::BleApi ()
 {
@@ -19,10 +20,14 @@ BleApi::BleApi ()
       BLECharacteristic::PROPERTY_READ |
       BLECharacteristic::PROPERTY_WRITE 
       );
-  int char_value = 0;
+
+//  Serial.print(char_value.c_str() + " ");
+ // Serial.println(char_value.to_string().c_str());
+
+
   // set callback functions
   ledBuiltInChar->setCallbacks(new CharacteristicCallbacks());
-  notifyChar->setValue(char_value);
+  notifyChar->setValue("0");
   ledBuiltInChar->setValue("ledOff");
   
   // set descriptor
@@ -34,11 +39,22 @@ BleApi::BleApi ()
 
   pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
-/*  
- * 
+ 
   BLEAdvertisementData  pAdvertisementData;
-  pAdvertisementData.setServiceData(bService->getUUID(), "hola");
+  // this will be a descriptor for the service
+  std::string advData = "AGRO_IOT";//"{\"serviceName\": \"CARE_POPO\"}";
+  pAdvertisementData.setServiceData(bService->getUUID(), advData);
+
+  // these are working weird
+//  pAdvertisementData.setShortName("ESP_IOT");
+ // pAdvertisementData.setName("ESP_IOT");
+
   pAdvertising->setAdvertisementData(pAdvertisementData);
+
+  /*
+  char * advPayload = &pAdvertisementData.getPayload()[0];
+  Serial.print("ADV Data Payload fuck.......");
+  Serial.println(advPayload);
  */
   
   pAdvertising->setScanResponse(true);
@@ -59,10 +75,14 @@ BleApi::~BleApi()
 
 void BleApi::notifyValue(int value) 
 {
-  notifyChar->setValue(value);
+  Serial.println("notifying.........");
+  //String valuetoString = String(value);
+  char buffer[30];
+  itoa(value, buffer, 10);
+  notifyChar->setValue(buffer);
   notifyChar->notify();
-/*  Serial.print("set and notifying: ");
-  Serial.println(value);*/
+  Serial.print("set and notifying: ");
+  Serial.println(buffer);
 }
 
 std::string BleApi::getCharValue()
